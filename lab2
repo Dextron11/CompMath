@@ -1,0 +1,95 @@
+close all;
+clear; 
+pkg load symbolic ;
+
+#input 
+#---------------------------------------------------------------------------------------------------------
+
+f = inline(input('input function: ','s') );
+startInterval = input('input start of interval: ');
+
+do
+  endInterval = input('input end of interval: '); 
+until ((endInterval>=startInterval))
+
+do 
+  numberInterpolationNodes = input('input of number of interpolation nodes:');
+until(numberInterpolationNodes>0)
+
+do 
+  errorCheckingPoint=input('input of error checking point: ');
+until(errorCheckingPoint>=startInterval && errorCheckingPoint<=endInterval)
+
+choice1=input('distribution of points 1=evenly; 2=Chebyshev polynomial ');
+switch choice1
+  case 1 
+    interpolationPoints = startInterval:((abs(endInterval-startInterval))/(numberInterpolationNodes-1)):endInterval;
+  case 2
+    m=0:numberInterpolationNodes-1;
+    interpolationPoints = 0.5*((endInterval-startInterval)*cos((2*m+1)/numberInterpolationNodes*0.5*pi)+startInterval+endInterval);
+endswitch;
+
+#---------------------------------------------------------------------------------------------------------
+#lagrange or newton interpolation 
+y = f(interpolationPoints);
+diaposon=linspace(startInterval,endInterval,1000);
+        
+choice=input('input type of interpolation 1=newton; 2=lagrange');
+switch choice
+  case 1
+        yy=newton(interpolationPoints,y,diaposon);
+  case 2
+        yy=lagrange(interpolationPoints,y,diaposon);
+endswitch
+
+#-----------------------------------------------------------------------------------------------------------
+#error calculation
+
+theoreticalError=theoreticalError(interpolationPoints,f,diaposon,errorCheckingPoint,choice1,endInterval,startInterval)
+practicalError=abs((f(errorCheckingPoint))-lagrange(interpolationPoints,y,errorCheckingPoint))
+
+#---------------------------------------------------------------------------------------------------------------
+#graphics
+
+hold on;
+grid on;
+plot(interpolationPoints,y,'bo','color','k')
+plot(diaposon,yy,'color','b')
+plot(diaposon,f(diaposon),'color','r')
+legend('Точки интерполяционного полинома','График интерполяционого полином','Исходная функция',-1)
+
+#--------------------------------------------------------------------------------------------------------------------
+hold off
+err=[];
+J=2:200; 
+  for numberInterpolationNodes=J 
+  yy=0;
+    switch choice1
+      case 1 
+        interpolationPoints = startInterval:((abs(endInterval-startInterval))/(numberInterpolationNodes-1)):endInterval;
+      case 2
+         m=0:numberInterpolationNodes-1;
+        interpolationPoints = 0.5*((endInterval-startInterval)*cos((2*m+1)/numberInterpolationNodes*0.5*pi)+startInterval+endInterval);
+    endswitch;
+    y = f(interpolationPoints);
+    switch choice
+    case 1
+         yy=newton(interpolationPoints,y,diaposon);
+    case 2
+         yy=lagrange(interpolationPoints,y,diaposon);
+  endswitch
+  e=abs((f(errorCheckingPoint))-lagrange(interpolationPoints,y,errorCheckingPoint));
+  err=[err e];
+  endfor
+  
+figure('Color','w')
+semilogy(J-1,err,'LineWidth',2)
+grid on
+
+figure('Color','w')
+a=(log(err)./log(J));
+plot(J-1,a)
+grid on
+
+
+
