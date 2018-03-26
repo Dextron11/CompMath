@@ -14,31 +14,25 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*- 
-## @deftypefn {Function File} {@var{retval} =} theoreticalError (@var{input1}, @var{input2})
+## @deftypefn {Function File} {@var{retval} =} newton (@var{input1}, @var{input2})
 ##
 ## @seealso{}
 ## @end deftypefn
 
 ## Author: Andresold <andresold@andresold-Aspire-R7-371T>
-## Created: 2018-02-13
-
-function retval = theoreticalError(interpolationPoints, f, diaposon, errorCheckingPoint,choise,b,a)
-  pkg load symbolic ; 
-  syms x;
-  n = length(interpolationPoints);
-  derivative=diff(f(x),n);
-  derivative=max(f(diaposon))
-  omeg = 1;
-  if (choise==1)
-    for j = [1:(n)]
-      omeg = omeg.*(errorCheckingPoint-interpolationPoints(j));
-  end
-  else
-      omeg=(1/(2^(2*n+1)))*((b-a)^(n+1));
-  end
+## Created: 2018-03-05
  
-retval = abs((derivative*omeg)/(factorial(n)));
-
+function yy = newton(x, y, xx)
+pkg load symbolic ;
+N = length(x);
+d = y;
+for  k = 1 : N-1
+     for i = 1: N - k
+          d(i) = (d(i+1) - d(i)) / (x(i+k) - x(i));
+      end
+end
+yy = d(1) * ones(size(xx));
+for k = 2 : N
+     yy = d(k) + (xx - x(k)) .* yy;
+end
 endfunction
-
-
